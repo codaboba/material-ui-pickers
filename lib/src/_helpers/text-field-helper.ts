@@ -47,17 +47,26 @@ export const getError = (
     return invalidDateMessage;
   }
 
-  if (
-    (maxDate && utils.isAfter(value, utils.endOfDay(utils.date(maxDate)))) ||
-    (disableFuture && utils.isAfter(value, utils.endOfDay(utils.date())))
-  ) {
+  // do not include minDates as errors
+  const isAfterMinDate =
+    utils.isAfter(value, utils.date(maxDate)) &&
+    Math.abs(utils.getDiff(value, utils.date(maxDate))) > 60000;
+
+  const isAfterToday =
+    utils.isAfter(value, utils.date()) && Math.abs(utils.getDiff(value, utils.date())) > 60000;
+
+  const isBeforeMinDate =
+    utils.isBefore(value, utils.date(minDate)) &&
+    Math.abs(utils.getDiff(value, utils.date(minDate))) > 60000;
+
+  const isBeforeToday =
+    utils.isBefore(value, utils.date()) && Math.abs(utils.getDiff(value, utils.date())) > 60000;
+
+  if ((maxDate && isAfterMinDate) || (disableFuture && isAfterToday)) {
     return maxDateMessage;
   }
 
-  if (
-    (minDate && utils.isBefore(value, utils.startOfDay(utils.date(minDate)))) ||
-    (disablePast && utils.isBefore(value, utils.startOfDay(utils.date())))
-  ) {
+  if ((minDate && isBeforeMinDate) || (disablePast && isBeforeToday)) {
     return minDateMessage;
   }
 
